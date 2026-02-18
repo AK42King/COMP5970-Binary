@@ -1,0 +1,32 @@
+import pefile
+
+def extract_pe_info(file_path):
+    pe = pefile.PE(file_path)
+
+    # Entry Point Information
+    entry_point_rva = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+    image_base = pe.OPTIONAL_HEADER.ImageBase
+    entry_point_va = image_base + entry_point_rva
+    entry_point_offset = pe.get_offset_from_rva(entry_point_rva)
+
+    print(f"Entry Point RVA: 0x{entry_point_rva:X}")
+    print(f"Entry Point VA:  0x{entry_point_va:X}")
+    print(f"File Offset:     0x{entry_point_offset:X}\n")
+
+    # Section Table Information
+    print("Section Table:")
+    for section in pe.sections:
+        name = section.Name.decode().rstrip('\x00')
+        vaddr = section.VirtualAddress
+        vsize = section.Misc_VirtualSize
+        raw_ptr = section.PointerToRawData
+        raw_size = section.SizeOfRawData
+
+        print(f"  {name}:")
+        print(f"    VA:      0x{vaddr:X}")
+        print(f"    VSize:   0x{vsize:X}")
+        print(f"    RawPtr:  0x{raw_ptr:X}")
+        print(f"    RawSize: 0x{raw_size:X}\n")
+
+# Example usage
+extract_pe_info("sample.exe")  # Replace with your actual file path
